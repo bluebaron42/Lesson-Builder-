@@ -1,0 +1,6 @@
+{
+  "name": "ReferenceModule",
+  "displayName": "ReferenceModule: Psychology Lesson Gold Standard",
+  "description": "The authoritative template for creating AQA GCSE/A Level Psychology modules. Demonstrates best practices for structure, code quality, pedagogical design, and theme implementation.",
+  "requestFramePermissions": []
+}
