@@ -81,19 +81,40 @@ npm run build       # Create dist/ folder
 npm run preview     # Test production build locally
 ```
 
-A GitHub Actions workflow is included for automated deployment.
+### Deployment to Psych-hub
+
+A GitHub Actions workflow (`.github/workflows/build-and-deploy.yml`) is included for automated deployment.
+
+**Prerequisites**:
+1. Add `displayName` field to `package.json` (controls module name in Psych-hub)
+2. Repository must have `PSYCH_HUB_DEPLOY_TOKEN` secret configured
+3. No ASCII arrows (`->`) in JSX text—use Unicode `→` instead
+
+**To deploy**:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow will:
+- Build the module
+- Create `module-dist.zip`
+- Create GitHub release
+- Sync to Psych-hub using your `displayName`
 
 ## Adapting This Module
 
 To create a new module based on this reference:
 
 1. **Copy the entire ReferenceModule folder**
-2. **Update package.json**: Change `displayName` and `description`
+2. **Update package.json**: Change `name`, **`displayName`** (CRITICAL for Psych-hub), and `description`
 3. **Update metadata.json**: Change name and description
 4. **Update App.tsx**: Implement lesson-specific content
 5. **Update constants.tsx**: Add lesson data (colors, quizzes, slides)
 6. **Create/modify components** for your lesson topics
-7. **Test** presentation mode and answer randomization
+7. **Replace ASCII arrows**: Use → (Unicode) not -> in JSX text
+8. **Test** presentation mode and answer randomization
+9. **Deploy**: Tag with version (e.g., `v1.0.0`) to trigger workflow
 
 ## Documentation Index
 

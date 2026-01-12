@@ -1,0 +1,11 @@
+{
+  "files.maxMemoryForLargeFilesMB": 512,
+  "search.maxFileSize": 524288000,
+  "files.exclude": {
+    "**/.git": false,
+    "**/node_modules": true,
+    "**/dist": true
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "python-envs.pythonProjects": []
+}
