@@ -100,6 +100,286 @@ Then verify the QUICK_CHECKLIST items:
 
 ---
 
+## 🔴 CRITICAL DO-NOTS (Violations Cause Rejection)
+
+### ❌ DO NOT: Create Placeholder Components
+- **Problem**: Importing components that don't exist (e.g., `import StroopSim from './components/StroopSim'` but file doesn't exist)
+- **Fix**: Every `import` must have a corresponding fully-built `.tsx` file
+- **Test**: Run `npm run dev` and navigate all 10 slides without console errors
+- **Reference**: See `Schizophrenia/components/` - every component listed in App.tsx exists and is complete
+
+### ❌ DO NOT: Skip Do Now Quiz Buttons
+- **Problem**: Do Now Quiz without "Submit Answers" and "Reveal All Answers" buttons
+- **Fix**: 
+  ```tsx
+  {!showResults ? (
+    <>
+      <button onClick={() => setShowResults(true)} disabled={Object.keys(answers).length < 5}>
+        Submit Answers
+      </button>
+      <button onClick={() => setShowResults(true)}>
+        Reveal All Answers
+      </button>
+    </>
+  ) : (
+    <div>Score: {score} / 5</div>
+  )}
+  ```
+- **Reference**: `ExampleModule/src/components/DoNowQuiz.jsx` lines 20-50
+- **Why**: Teachers need to control when answers show; students need feedback
+
+### ❌ DO NOT: Create Flat, Lifeless Simulations
+- **Problem**: Simulations that are just quizzes with radio buttons
+- **Fix**: Simulations must have:
+  - **3+ interactive elements** (drag-drop, click zones, timed interactions, dialogue choices)
+  - **Visual feedback** (color changes, animations, icons appearing/disappearing)
+  - **Educational value** (teach a concept, not just assess)
+  - **Results display** (score, accuracy, achievement)
+- **Examples**:
+  - ✅ `SynapseBuilder` - Drag neurotransmitters to receptors, see binding animation
+  - ✅ `StroopSim` - Click colors matching words, timer runs, accuracy tracked
+  - ✅ `CBT_TherapistSim` - Choose dialogue options, see thought record update
+  - ❌ Quiz with radio buttons ≠ simulation
+- **Reference**: `Schizophrenia/components/SynapseBuilder.tsx` and `StroopSim.tsx`
+
+### ❌ DO NOT: Ignore Presentation Mode
+- **Problem**: Components that don't adapt to `isPresentation={true}` prop
+- **Fix**: Every component must:
+  - Accept `isPresentation` prop
+  - Scale fonts 1.5-2x larger when `isPresentation={true}`
+  - Maintain readability at 20+ feet distance
+  - Example:
+    ```tsx
+    <h3 className={`font-bold ${isPresentation ? 'text-4xl' : 'text-xl'}`}>
+      Question
+    </h3>
+    ```
+- **Why**: Teachers present these lessons to 30 students in a classroom
+- **Reference**: Search "isPresentation" in `Schizophrenia/components/DoNowQuiz.tsx`
+
+### ❌ DO NOT: Use Flat Grayscale Colors
+- **Problem**: All buttons/text in plain gray instead of theme colors
+- **Fix**: 
+  1. Define `lessonThemes` in constants.ts:
+     ```tsx
+     export const lessonThemes = {
+       1: { color: 'cyan', name: 'Cyan' },
+       2: { color: 'amber', name: 'Amber' },
+       // ...etc
+     };
+     ```
+  2. Apply theme color everywhere:
+     - Title slide border: `border-${lessonTheme.color}-500`
+     - Buttons: `bg-${lessonTheme.color}-600`
+     - Icons: `text-${lessonTheme.color}-400`
+     - Highlights: `text-${lessonTheme.color}-300`
+- **Reference**: `Schizophrenia/components/Slide.tsx` and `PhaseHeader.tsx`
+
+### ❌ DO NOT: Miss Understanding Check
+- **Problem**: "Understanding Check" slide doesn't exist or has wrong structure
+- **Fix**: Create `Lesson{N}UnderstandingCheck.tsx` with:
+  - **Exactly 5 questions**
+  - **3 scenario-based questions** (story about a person, ask to identify concept)
+  - **2 matching questions** (match study/researcher to finding)
+  - **Randomized answers** using `useMemo` + `shuffleArray()`
+  - **Detailed feedback** linking to slides 2-3
+  ```tsx
+  const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
+  const [questions] = useState(() => shuffleArray(questionBank));
+  ```
+- **Reference**: `Schizophrenia/components/Lesson3UnderstandingCheck.tsx`
+- **Why**: Randomization prevents students from memorizing answers
+
+### ❌ DO NOT: Ship Without Keyboard Navigation
+- **Problem**: App.tsx doesn't support arrow keys or escape key
+- **Fix**: Add to App.tsx:
+  ```tsx
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+      if (e.key === 'Escape') setIsPresentation(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentSlide, slideCount]);
+  ```
+- **Why**: Teachers need hands-free navigation while presenting
+- **Reference**: `Schizophrenia/App.tsx` lines 85-95
+
+### ❌ DO NOT: Miss Visual Effects
+- **Problem**: No blur, glow, animations, or gradients
+- **Fix**: Use these throughout:
+  - Glowing icon: `blur-[100px] opacity-20 rounded-full animate-pulse`
+  - Gradient text: `bg-gradient-to-r from-${color}-400 to-${color}-600`
+  - Fade in: `animate-fadeIn`
+- **Reference**: `Schizophrenia/App.tsx` lines 105-110 (glowing brain icon)
+
+---
+
+## ✅ CRITICAL DO-THIS-ALWAYS (Quality Standards)
+
+### ✅ DO: Build Every Required Component
+**Checklist for each lesson:**
+- [ ] `Lesson{N}UnderstandingCheck.tsx` - Exists and fully implemented
+- [ ] `Lesson{N}Simulation.tsx` (or multiple sim components) - Exists and interactive
+- [ ] Imported in App.tsx and rendered on the correct slide
+- [ ] All imports match actual files (no ghost imports)
+
+**Template import section for App.tsx:**
+```tsx
+// Required for every lesson
+import Lesson1UnderstandingCheck from './components/Lesson1UnderstandingCheck';
+import Lesson1Simulation from './components/Lesson1Simulation';
+
+// These MUST exist. If you import them, you MUST create them.
+// Check: npm run dev → no console errors → no missing component warnings
+```
+
+### ✅ DO: Structure Do Now Quiz Correctly
+**Must-have button flow:**
+1. User answers all 5 questions
+2. "Submit Answers" button becomes enabled
+3. User clicks "Submit Answers" → shows score
+4. OR user clicks "Reveal All Answers" → shows all correct answers
+5. Correct answers highlighted in green
+6. Wrong answers highlighted in red with correction
+
+**CSS pattern:**
+```tsx
+<button
+  onClick={() => setShowResults(true)}
+  disabled={Object.keys(answers).length < 5}
+  className={`${
+    Object.keys(answers).length < 5
+      ? 'opacity-50 cursor-not-allowed'
+      : 'hover:bg-green-600'
+  } bg-green-700 text-white font-bold px-8 py-3 rounded-lg`}
+>
+  Submit Answers
+</button>
+```
+
+### ✅ DO: Make Simulations Engaging
+**Minimum interactive elements:**
+
+| Type | Example | Components |
+|------|---------|-----------|
+| Drag-Drop | Synapse builder | Draggable elements, drop zones, validation |
+| Timed | Stroop test | Timer, clickable areas, score tracking |
+| Dialogue | Therapist sim | Multiple choice dialogue, branching logic |
+| Visual | Drug molecule | Animated transitions, clickable details |
+
+**All must have:**
+- Visual feedback (colors change, animations play)
+- Error messages or guidance if wrong
+- Success state (score, achievement, congratulations)
+- Reset button to retry
+- Presentation mode scaling
+
+### ✅ DO: Apply Theme Color System
+**Color options for lessons:**
+- Cyan (`cyan-400`, `cyan-500`, `cyan-600`)
+- Amber (`amber-400`, `amber-500`, `amber-600`)
+- Orange (`orange-400`, `orange-500`, `orange-600`)
+- Red (`red-400`, `red-500`, `red-600`)
+- Yellow (`yellow-400`, `yellow-500`, `yellow-600`)
+- Teal (`teal-400`, `teal-500`, `teal-600`)
+- Purple (`purple-400`, `purple-500`, `purple-600`)
+
+**Apply to:**
+- Title slide border/text
+- PhaseHeader icons and accents
+- Button hovers
+- Highlighted text
+- Quiz correct answer highlights
+
+**Example in constants.ts:**
+```tsx
+export const lessonThemes = {
+  1: { color: 'cyan', name: 'Cyan' },
+  2: { color: 'amber', name: 'Amber' },
+  // ...
+};
+
+// In App.tsx:
+const lessonTheme = lessonThemes[currentLesson];
+
+// In components:
+<div className={`border-${lessonTheme.color}-500`}>
+  <Brain className={`text-${lessonTheme.color}-400`} />
+</div>
+```
+
+### ✅ DO: Implement Presentation Mode
+**Required in App.tsx:**
+```tsx
+const [isPresentation, setIsPresentation] = useState(false);
+
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowRight') nextSlide();
+    if (e.key === 'ArrowLeft') prevSlide();
+    if (e.key === 'Escape') setIsPresentation(false);
+  };
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, [currentSlide, slideCount]);
+
+// In toolbar:
+<button onClick={() => setIsPresentation(!isPresentation)}>
+  <Projector size={24} />
+</button>
+```
+
+**Required in all components:**
+- Accept `isPresentation` prop
+- Scale fonts when `isPresentation={true}`
+- Maintain readability (test at 20+ feet)
+
+### ✅ DO: Test Everything Before Shipping
+```bash
+# Test 1: No console errors
+npm run dev
+# → Open localhost:5173
+# → Open DevTools (F12)
+# → Check Console tab → No red errors
+# → Test all 10 slides → No broken imports
+
+# Test 2: Presentation mode works
+# → Click Projector button
+# → Arrow keys navigate
+# → Fonts are large (readable from 20 feet)
+# → Escape closes presentation mode
+
+# Test 3: Do Now Quiz works
+# → Answer all 5 questions
+# → Click "Submit Answers" → Shows score
+# → Reload page
+# → Click "Reveal All Answers" → Shows all answers
+
+# Test 4: Understanding Check randomizes
+# → Open Understanding Check slide (usually slide 4)
+# → Note answer order
+# → Reload page (F5)
+# → Answer order should be different (randomized)
+# → Repeat 5+ times to verify
+
+# Test 5: Build succeeds
+npm run build
+# → No errors in build output
+# → dist/ folder created successfully
+```
+
+### ✅ DO: Copy from Working Examples
+Rather than build from scratch, copy and modify:
+- **Do Now Quiz**: Copy `Schizophrenia/components/DoNowQuiz.tsx`
+- **Understanding Check**: Copy `Schizophrenia/components/Lesson3UnderstandingCheck.tsx`
+- **Simulation**: Choose from `SynapseBuilder.tsx`, `StroopSim.tsx`, or `CBT_TherapistSim.tsx`
+- **App.tsx structure**: Copy `Schizophrenia/App.tsx` and adapt
+
+---
+
 ## 🔴 Non-Negotiable Requirements
 
 1. **All content from textbook** - Every concept, study, and evaluation point must trace to `Textbooks/AQA Year 1 textbook work.txt`
@@ -107,6 +387,11 @@ Then verify the QUICK_CHECKLIST items:
 3. **10-slide structure** - Every lesson is exactly 10 slides (non-negotiable)
 4. **Do Now Quiz** - 5 questions from PREVIOUS lessons ONLY (spaced retrieval)
 5. **Detailed feedback** - 2-3 sentences per answer linking to research
+6. **NO placeholder imports** - Every `import` statement must have a corresponding `.tsx` file that is complete and functional
+7. **Presentation mode support** - All components must scale fonts and support `isPresentation` prop
+8. **Theme colors applied** - All lessons must use the color theme system
+9. **Keyboard navigation** - Arrow keys and Escape key must work in App.tsx
+10. **Visual polish** - Gradients, blur effects, glowing icons, animations (not just flat colors)
 
 ---
 
