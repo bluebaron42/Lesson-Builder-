@@ -10,9 +10,7 @@ You are tasked with creating a **production-ready AQA GCSE/A Level Psychology le
 
 ### 1. Navigate to the Lesson-Builder Repository
 
-```bash
-cd /workspaces/Lesson-Builder-
-```
+https://github.com/bluebaron42/Lesson-Builder-
 
 ### 2. Read These Files in Order (30 minutes)
 
